@@ -1,0 +1,14 @@
+{
+  "name": "Riyusaki",
+  "description": "chrome extension for riyusaki.com",
+  "version": "2.0",
+  "permissions": [
+    "tabs",
+		"http://localhost:8080/Chrome_Logger/Log"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "manifest_version": 2
+}
