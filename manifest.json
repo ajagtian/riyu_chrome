@@ -4,7 +4,7 @@
   "version": "2.0",
   "permissions": [
     "tabs",
-		"http://localhost:8080/Chrome_Logger/Log"
+		"http://localhost:5000/log"
   ],
   "background": {
     "scripts": ["background.js"],
