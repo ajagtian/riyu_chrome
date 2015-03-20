@@ -9,58 +9,65 @@ var url_title_map = {};
 var url_time_map = {};
 var url_focus_time_map = {};
 var tab_id_url_map = {};
-var __activeTab__ = null;
-
+var __aT__ = null;
+var __aTi__ = null;
 riyusaki = {
   init : function(){
     chrome.tabs.onActivated.addListener(function (activeInfo) {
       chrome.tabs.getSelected(null, function(tab){
-        var tab_url = tab.url;
+        var tab_url = (tab.url).toString();
         //riyusaki.log('activated - '+url)
         // riyusaki.log("activated: "+url);
-        var tab_id = tab.id;
-        var tab_title = tab.title;
-        riyusaki.recordTitle(tab_url, tab_title);
-        riyusaki.recordID(tab_id, tab_url);
+        var tab_id = (tab.id).toString();
+        if(tab_id != __aTi__) {
+          var tab_title = tab.title.toString();
+          riyusaki.recordTitle(tab_url, tab_title);
+          riyusaki.recordID(tab_id, tab_url);
 
-        // riyusaki.log("__activeTab__ before: "+__activeTab__);
-        if(!riyusaki.isEmpty(__activeTab__) && __activeTab__ != tab_url){
-          riyusaki.discontinueLogger(__activeTab__);
-          __activeTab__ = tab_url;
-          riyusaki.continueLogger(__activeTab__);
-         }
-        if(riyusaki.isEmpty(__activeTab__)){
-          __activeTab__ = tab_url;
-          riyusaki.continueLogger(tab_url);
+          // riyusaki.log("__aT__ before: "+__aT__);
+          if(!riyusaki.isEmpty(__aT__) && __aT__ != tab_url){
+            riyusaki.discontinueLogger(__aT__);
+            __aT__ = tab_url;
+            __aTi__ = tab_id;
+            riyusaki.continueLogger(__aT__);
+           }
+          if(riyusaki.isEmpty(__aT__)){
+            __aT__ = tab_url;
+            __aTi__ = tab_id;
+            riyusaki.continueLogger(tab_url);
+          }
         }
 
        });
     });
     chrome.tabs.onUpdated.addListener(function (tabid, changeInfo, tab) {
-      var tab_url = tab.url;
+      var last_active_tab = tab_id_url_map[tabid]
+      var tab_url = (tab.url).toString();
       //riyusaki.log('updated - '+url)
       // riyusaki.log("updated: "+url);
-      var tab_title = tab.title;
+      var tab_title = (tab.title).toString();
       if(tab_title.toLowerCase().indexOf("new tab") == -1){
         riyusaki.recordTitle(tab_url, tab_title);
-        riyusaki.recordID(tabid, tab_url);
+        riyusaki.recordID(tabid.toString(), tab_url);
 
-        if (!riyusaki.isEmpty(__activeTab__) && __activeTab__ == tab_url){
+        if (!riyusaki.isEmpty(last_active_tab) && last_active_tab == tab_url){
           // do nothing
         }
-        if(!riyusaki.isEmpty(__activeTab__) && __activeTab__ != tab_url){
-          riyusaki.stopLogger(__activeTab__);
-          __activeTab__ = tab_url;
-          riyusaki.continueLogger(__activeTab__)
+        if(!riyusaki.isEmpty(last_active_tab) && last_active_tab != tab_url){
+          riyusaki.stopLogger(last_active_tab);
+          __aT__ = tab_url;
+          __aTi__ = tabid;
+          riyusaki.continueLogger(__aT__)
         }
-        // riyusaki.log("__activeTab__ before: "+__activeTab__);
+        // riyusaki.log("__aT__ before: "+__aT__);
         //
-        if(riyusaki.isEmpty(__activeTab__)){
-          __activeTab__ = tab_url;
-          riyusaki.continueLogger(__activeTab__);
+        if(riyusaki.isEmpty(last_active_tab)){
+          __aT__ = tab_url;
+          __aTi__ = tabid;
+          riyusaki.continueLogger(__aT__);
         }
         //
-        //riyusaki.log("__activeTab__ after: "+__activeTab__);
+        //riyusaki.log("__aT__ after: "+__aT__);
         //riyusaki.log("record_id "+tabid+"=>"+tab_url);
       }
     });
@@ -70,7 +77,7 @@ riyusaki = {
 
         riyusaki.stopLogger(tab_id_url_map[tabID]);
         //riyusaki.log("removed: "+tab_id_url_map[tabID]);
-        //__activeTab__ = null;
+        //__aT__ = null;
         //riyusaki.log('removed')
     });
 
@@ -78,39 +85,32 @@ riyusaki = {
   recordTitle:function(url, title){
     if(riyusaki.isEmpty(url_title_map[url])){
       url_title_map[url] = title;
-      riyusaki.log("recordTitle:"+url);
+    //  riyusaki.log("recordTitle:"+url);
     }
   },
   recordID:function(id, url){
-    if (riyusaki.isEmpty(tab_id_url_map[id])){
+    if(!riyusaki.isEmpty(url)){
       tab_id_url_map[id] = url;
-      riyusaki.log('record id'+url);
     }
   },
   continueLogger:function(url){
     url_focus_time_map[url] = new Date().getTime();
     if(riyusaki.isEmpty(url_time_map[url]))
       url_time_map[url] = 0;
-    riyusaki.log("continueLogger:"+url);
+    //riyusaki.log("continueLogger:"+url);
   },
   discontinueLogger:function(url){
     url_time_map[url] += parseInt((new Date().getTime() - url_focus_time_map[url])/1000);
-    url_focus_time_map[url] = new Date();
-    riyusaki.log("discontinueLogger:"+url);
+    url_focus_time_map[url] = new Date().getTime();
+    //riyusaki.log("discontinueLogger:"+url);
   },
   stopLogger:function(url){
     url_time_map[url] += parseInt( (new Date().getTime() - url_focus_time_map[url]) /1000);
-    url_focus_time_map[url] = new Date();
+    url_focus_time_map[url] = new Date().getTime();
     done = false;
-    done = riyusaki.record(url, url_title_map[url], url_time_map[url]);
+    riyusaki.record(url, url_title_map[url], url_time_map[url], true);
 
-    riyusaki.log("stopLogger:"+url);
-
-    if(done){
-      delete url_title_map[url];
-      delete url_time_map[url];
-      delete url_focus_time_map[url];
-    }
+    //riyusaki.log("stopLogger:"+url);
 
   },
   destroyData:function(){
@@ -122,17 +122,28 @@ riyusaki = {
     else
       return false;
   },
-  record:function(url, title, time){
+  record:function(url, title, time, del){
     var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", "http://localhost:5000/log/"+url+'-'+time+'-'+title, true);
+    xmlHttp.open("GET", "http://localhost:5000/log/"+url+'/'+time+'/'+title, true);
     xmlHttp.send();
-    return true;
+    xmlHttp.onreadystatechange = function(){
+      if(xmlHttp.status == 200 && xmlHttp.readyState == 4 && del){
+        riyusaki.delete_data(url)
+        return true;
+      }
+    }
+
   },
   log:function(text){
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", "http://localhost:5000/log/"+text, true);
     xmlHttp.send();
     return true;
+  },
+  delete_data : function(url){
+    delete url_title_map[url];
+    delete url_time_map[url];
+    delete url_focus_time_map[url];
   }
 }
 riyusaki.init();
