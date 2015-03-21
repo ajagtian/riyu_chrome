@@ -13,7 +13,7 @@ var __aT__ = null;
 var __aTi__ = null;
 riyusaki = {
   init : function(){
-    chrome.tabs.onActivated.addListener(function (activeInfo) {
+  /*  chrome.tabs.onActivated.addListener(function (activeInfo) {
       chrome.tabs.getSelected(null, function(tab){
         var tab_url = (tab.url).toString();
         //riyusaki.log('activated - '+url)
@@ -39,32 +39,31 @@ riyusaki = {
         }
 
        });
-    });
+    });*/
     chrome.tabs.onUpdated.addListener(function (tabid, changeInfo, tab) {
-      var last_active_tab = tab_id_url_map[tabid]
       var tab_url = (tab.url).toString();
       //riyusaki.log('updated - '+url)
       // riyusaki.log("updated: "+url);
       var tab_title = (tab.title).toString();
       if(tab_title.toLowerCase().indexOf("new tab") == -1){
-        riyusaki.recordTitle(tab_url, tab_title);
-        riyusaki.recordID(tabid.toString(), tab_url);
+        //riyusaki.recordTitle(tab_url, tab_title);
+        //riyusaki.recordID(tabid.toString(), tab_url);
 
-        if (!riyusaki.isEmpty(last_active_tab) && last_active_tab == tab_url){
+        if (!riyusaki.isEmpty(__aT__) && __aT__ == tab_url){
           // do nothing
         }
-        if(!riyusaki.isEmpty(last_active_tab) && last_active_tab != tab_url){
-          riyusaki.stopLogger(last_active_tab);
+        if(!riyusaki.isEmpty(__aT__) && __aT__ != tab_url){
+          //riyusaki.stopLogger(last_active_tab);
           __aT__ = tab_url;
           __aTi__ = tabid;
-          riyusaki.continueLogger(__aT__)
+          //riyusaki.continueLogger(__aT__)
         }
         // riyusaki.log("__aT__ before: "+__aT__);
         //
-        if(riyusaki.isEmpty(last_active_tab)){
+        if(riyusaki.isEmpty(__aT__)){
           __aT__ = tab_url;
           __aTi__ = tabid;
-          riyusaki.continueLogger(__aT__);
+          //riyusaki.continueLogger(__aT__);
         }
         //
         //riyusaki.log("__aT__ after: "+__aT__);
@@ -72,17 +71,17 @@ riyusaki = {
       }
     });
 
-    chrome.tabs.onRemoved.addListener(function (tabID, removeInfo) {
+  /*  chrome.tabs.onRemoved.addListener(function (tabID, removeInfo) {
         //riyusaki.log("before remove: "+tab_id_url_map[tabID]);
 
         riyusaki.stopLogger(tab_id_url_map[tabID]);
         //riyusaki.log("removed: "+tab_id_url_map[tabID]);
         //__aT__ = null;
         //riyusaki.log('removed')
-    });
+    }); */
 
   },
-  recordTitle:function(url, title){
+/*  recordTitle:function(url, title){
     if(riyusaki.isEmpty(url_title_map[url])){
       url_title_map[url] = title;
     //  riyusaki.log("recordTitle:"+url);
@@ -115,13 +114,13 @@ riyusaki = {
   },
   destroyData:function(){
 
-  },
+  },*/
   isEmpty:function(obj){
     if(obj == null || obj == undefined || obj == "")
       return true;
     else
       return false;
-  },
+  }/*,
   record:function(url, title, time, del){
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", "http://localhost:5000/log/"+url+'/'+time+'/'+title, true);
@@ -144,7 +143,7 @@ riyusaki = {
     delete url_title_map[url];
     delete url_time_map[url];
     delete url_focus_time_map[url];
-  }
+  }*/
 }
 riyusaki.init();
 })();
