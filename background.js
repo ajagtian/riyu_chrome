@@ -13,7 +13,6 @@ var __aT__ = null;
 var __aTi__ = null;
 var prefName = '_ryski'
 var cookieName = 'randomID'
-
 riyusaki = {
   setCookie:function(){
     chrome.cookies.get({url:app_uri, name:cookieName}, function(cookie){
@@ -111,7 +110,8 @@ riyusaki = {
     url_focus_time_map[url] = new Date().getTime();
   },
   stopLogger:function(url){
-    url_time_map[url] += parseInt( (new Date().getTime() - url_focus_time_map[url]) /1000);
+    if(__aT__ == url)
+      url_time_map[url] += parseInt( (new Date().getTime() - url_focus_time_map[url]) /1000);
     url_focus_time_map[url] = new Date().getTime();
     var done = false;
     done = riyusaki.record(url, url_title_map[url], url_time_map[url]);
@@ -132,7 +132,7 @@ riyusaki = {
       return false;
   },
   record:function(url, title, time){
-    if(!riyusaki.isEmpty(url) && !riyusaki.isEmpty(title) && time != NaN)
+    if(!riyusaki.isEmpty(url) && !riyusaki.isEmpty(title) && !isNaN(time))
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", "http://localhost:5000/log/"+url+'/'+time+'/'+title, true);
     xmlHttp.send();
