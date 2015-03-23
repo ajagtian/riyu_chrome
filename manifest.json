@@ -4,11 +4,16 @@
   "version": "2.0",
   "permissions": [
     "tabs",
-		"http://localhost:5000/log"
+    "cookies",
+    "http://www.riyusaki.com/",
+    "http://localhost:5000/log",
+    "<all_urls>",
+    "storage",
+    "webRequest"
   ],
   "background": {
     "scripts": ["background.js"],
-    "persistent": false
+    "persistent": true
   },
   "manifest_version": 2
 }
